@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hongkun.mapper.apply.HxSignTrackRecordMapper">
+
+    <!--工程监理签到记录-->
+    <select id="getUserSignTrackRecordList" resultType="com.hongkun.model.vo.apply.HxSignTrackRecordVO">
+            select a.companyName,a.projectName,b.id recordId,b.userName,b.account,
+        c.jobTitle,
+        case when c.status=1 then '在职'
+        else '离职'
+        end  status,
+        c.lastUpdateTime,b.positionId,b.positionName,b.signTime
+            FROM hx_sign_track_configure a,hx_sign_track_record b,t_bd_person c
+            where a.id=b.positionId
+                  and b.account=c.phone
+            <if test="companyName !=null and companyName != ''">
+                and a.companyName like concat("%",#{companyName},'%')
+            </if>
+            <if test="projectName !=null and projectName != ''">
+                and a.projectName like concat('%',#{projectName},'%')
+            </if>
+            <if test="userName !=null and userName != ''">
+                and b.userName like concat('%',#{userName},'%')
+            </if>
+            <if test="account !=null and account != ''">
+                and b.account like concat('%',#{account},'%')
+            </if>
+            <if test="startSignTime !=null and startSignTime != ''">
+                and b.signTime >= #{startSignTime}
+            </if>
+            <if test="endSignTime !=null and endSignTime != ''">
+                and b.signTime &lt;= #{endSignTime}
+            </if>
+            order by b.signTime desc
+    </select>
+
+
+    <!-- 汇总查询签到记录 -->
+    <select id="getHxSignTrackRecordSummary" resultType="com.hongkun.model.vo.apply.HxSignTrackRecordSummaryVO">
+
+        select
+                b.cityCompanyName,b.projectName,b.jlCompanyName,
+                b.phone account,b.name,
+                b.jobTitle,
+                case when b.status=1 then '在职'
+                else '离职'
+                end  status,
+                b.lastUpdateTime,
+                count(dkCount) dkCount
+        from (
+                select tbp.phone,tbp.name,tbp.jobTitle,tbp.status,tbp.lastUpdateTime,
+                substring_index(replace(tbo.longName, '鸿坤集团!商务伙伴!工程监理!', ''),'!',1) cityCompanyName,
+                substring_index(substring_index(replace(tbo.longName, '鸿坤集团!商务伙伴!工程监理!', ''),'!',2),'!',-1) projectName,
+                substring_index(replace(tbo.longName, '鸿坤集团!商务伙伴!工程监理!', ''),'!',-1) jlCompanyName
+                FROM t_bd_person tbp,t_bd_org tbo
+                where tbp.isPartner=1
+                and tbp.orgId=tbo.id
+                union all
+                select tbp.phone,tbp.name,tbp.jobTitle,tbp.status,tbp.lastUpdateTime,
+                substring_index(replace(tbo.longName, '鸿坤集团!商务合作伙伴!监理商务合作伙伴!工程监理!', ''),'!',1) cityCompanyName,
+                substring_index(substring_index(replace(tbo.longName, '鸿坤集团!商务合作伙伴!监理商务合作伙伴!工程监理!', ''),'!',2),'!',-1) projectName,
+                substring_index(replace(tbo.longName, '鸿坤集团!商务合作伙伴!监理商务合作伙伴!工程监理!', ''),'!',-1) jlCompanyName
+                FROM t_bd_person tbp,t_bd_person_casvirorg tbc,t_bd_org tbo
+                where tbp.oid=tbc.oid and tbp.isPartner=1
+                and tbc.orgId=tbo.id
+        ) b
+        left join (
+                    select account,date_format(signTime, '%Y-%m-%d'),count(*) dkCount
+                    FROM hx_sign_track_record
+                    <where>
+                        <if test="startSignTime !=null and startSignTime != ''">
+                            and signTime >= #{startSignTime}
+                        </if>
+                        <if test="endSignTime !=null and endSignTime != ''">
+                            and signTime &lt;= #{endSignTime}
+                        </if>
+                    </where>
+
+                    group by account,date_format(signTime, '%Y-%m-%d')
+
+        ) a  on  a.account = b.phone
+        WHERE  1=1
+        <if test="cityCompanyName!=null and cityCompanyName!=''">
+            and cityCompanyName like concat('%',#{cityCompanyName},'%')
+        </if>
+        <if test="projectName!=null and projectName!=''">
+            and projectName like concat('%',#{projectName},'%')
+        </if>
+        <if test="jlCompanyName!=null and jlCompanyName!=''">
+            and jlCompanyName like concat('%',#{jlCompanyName},'%')
+        </if>
+
+        <if test="startSignTime !=null and startSignTime != ''">
+            and ((b.status!=1 and b.lastUpdateTime > #{startSignTime}) or b.status=1)
+        </if>
+
+        group by b.cityCompanyName,b.projectName,b.jlCompanyName,a.account,b.name,b.jobTitle,b.status,b.lastUpdateTime
+    </select>
+
+
+</mapper>

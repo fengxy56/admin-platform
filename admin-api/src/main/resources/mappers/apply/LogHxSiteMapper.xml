@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hongkun.mapper.apply.LogHxSiteMapper">
+
+    <!--  fengxiaoyang  20200416 获取用户左侧菜单-->
+    <select id="getUserVisitSiteXxCountList" resultType="com.hongkun.model.vo.hx.LogSiteUserIdVisitVO">
+        SELECT
+        date_format(createtime, '%Y-%m-%d') visitDate,userid,count(*) visitCount
+        FROM log_hx_site t
+        where type='getCameraPreviewURL'
+        <if test="startTime != null and startTime != '' ">
+            and createtime >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and createtime <![CDATA[ <= ]]> #{endTime}
+        </if>
+        group by date_format(t.createtime, '%Y-%m-%d'),userid
+        order by count(*) desc
+    </select>
+
+
+    <!--  fengxiaoyang  20200416 获取用户左侧菜单-->
+    <select id="getUserVisitSiteHzCountList" resultType="com.hongkun.model.vo.hx.LogSiteUserIdVisitVO">
+        SELECT
+        userid,count(*) visitCount
+        FROM log_hx_site t
+        where type='getCameraPreviewURL'
+        <if test="startTime != null and startTime != '' ">
+            and createtime >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and createtime <![CDATA[ <= ]]> #{endTime}
+        </if>
+        group by userid
+        order by count(*) desc
+    </select>
+
+
+    <!--  fengxiaoyang  20200416 获取用户左侧菜单-->
+    <select id="getLogHxSiteList" resultType="com.hongkun.model.vo.hx.LogHxSiteVO">
+        SELECT
+        t.userid,hp.name,hp.orgLongName department ,hp.jobTitle,t.createTime
+        FROM log_hx_site t,t_bd_person hp
+        where type='getCameraPreviewURL'
+        and t.userid=hp.phone
+        and hp.status=1
+        <if test="userid != null and userid != '' ">
+            and t.userid = #{userid}
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and t.createtime >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and t.createtime <![CDATA[ <= ]]> #{endTime}
+        </if>
+        order by t.createTime desc
+    </select>
+
+
+    <!--  fengxiaoyang  20200609 获取用户时间详细数量-->
+    <select id="getUserVisitSiteDetailCountList" resultType="com.hongkun.model.vo.hx.LogSiteUserIdVisitVO">
+        SELECT t.userid,hp.name,hp.orgLongName department,hp.jobTitle,date_format(t.createtime, '%Y-%m-%d')
+        visitDate,count(*) visitCount
+        FROM log_hx_site t,t_bd_person hp
+        where type='getCameraPreviewURL'
+        and t.userid=hp.phone and hp.status=1
+        <if test="startTime != null and startTime != '' ">
+            and t.createtime >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and t.createtime <![CDATA[ <= ]]> #{endTime}
+        </if>
+        group by date_format(t.createtime, '%Y-%m-%d'),userid
+        order by count(*) desc
+    </select>
+
+    <!--  fengxiaoyang  20200609 获取用户汇总数量-->
+    <select id="getUserVisitSiteTotalCountList" resultType="com.hongkun.model.vo.hx.LogSiteUserIdVisitVO">
+        SELECT t.userid,hp.name,hp.orgLongName department,hp.jobTitle,count(*) visitCount
+        FROM log_hx_site t,t_bd_person hp
+        where type='getCameraPreviewURL'
+        and t.userid=hp.phone and hp.status=1
+        <if test="startTime != null and startTime != '' ">
+            and t.createtime >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and t.createtime <![CDATA[ <= ]]> #{endTime}
+        </if>
+        group by t.userid
+        order by count(*) desc
+    </select>
+
+    <!--  fengxiaoyang  20200609 获取组织汇总数量 -->
+    <select id="getDeptVisitSiteTotalCountList" resultType="com.hongkun.model.vo.hx.LogSiteUserIdVisitVO">
+        SELECT hp.orgLongName department,count(*) visitCount
+        FROM log_hx_site t,t_bd_person hp
+        where type='getCameraPreviewURL'
+        and t.userid=hp.phone and hp.status=1
+        <if test="startTime != null and startTime != '' ">
+            and t.createtime >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and t.createtime <![CDATA[ <= ]]> #{endTime}
+        </if>
+        group by hp.orgLongName
+        order by count(*) desc
+    </select>
+</mapper>

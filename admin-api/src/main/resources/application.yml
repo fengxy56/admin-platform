@@ -1,0 +1,38 @@
+spring:
+  profiles:
+    active: local
+  application:
+    name: hkdc-opex-api
+
+  #数据压缩
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types:
+    - application/json
+  servlet:
+    multipart:
+      max-request-size: 50MB
+      max-file-size: 50MB
+  mvc:
+    static-path-pattern: /**
+    favicon:
+      enabled: false
+logging:
+  level:
+     com.hongkun.mapper : debug
+
+###swagger
+swagger:
+  enable: true
+
+
+
+# http请求配置
+http-config:
+  maxTotal: 200
+  defaultMaxPerRoute: 100
+  connectTimeout: 5000
+  connectionRequestTimeout: 1000
+  socketTimeout: 60000
+  validateAfterInactivity: 2000

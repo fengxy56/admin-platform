@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hongkun.mapper.apply.HxSignTrackAuthMapper">
+
+    <!--fengxiaoyang 20200403 根据角色id获取用户角色授权菜单-->
+    <select id="getUserRoleAppList" resultType="com.hongkun.model.vo.hx.UserRoleAppVO">
+        select hcai.id menuId,hcai.positionName menuName,hcai.positionName title,hcai.parentconfigureId parentId,
+        case when haa.ID is null then 'false' else 'true' end as checked
+        FROM hx_sign_track_configure hcai
+        LEFT JOIN hx_sign_track_auth haa
+        on haa.configureId=hcai.id
+        and haa.authType = #{authType}
+        and haa.authId = #{authId}
+        where hcai.status=4
+        ORDER BY hcai.showOrder
+    </select>
+
+
+    <!--fengxiaoyang 20200403 根据角色id获取用户角色授权菜单-->
+    <select id="getHxSignTrackAuthList" resultType="com.hongkun.model.vo.apply.HxSignTrackAuthVO">
+        select *FROM (
+
+        SELECT DISTINCT haa.authType,haa.authId authId,tbp.name authName,haa.configureId configureId,hcai.positionName
+        positionName,"账户" authTypeStr
+        FROM hx_sign_track_auth haa,t_bd_person tbp,hx_sign_track_configure hcai
+        where
+        haa.configureId=hcai.id
+        and (haa.authType=0 or haa.authType=1)
+        <if test="configureId != null and configureId != '' ">
+            and haa.configureId = #{configureId}
+        </if>
+        <if test="positionName != null and positionName != '' ">
+            and hcai.positionName like concat(concat("%",#{positionName}),"%")
+        </if>
+        <if test="authId != null and authId != '' ">
+            and haa.authId = #{authId}
+        </if>
+        <if test="authName != null and authName != '' ">
+            and tbp.name like concat(concat("%",#{authName}),"%")
+        </if>
+        and haa.authId=tbp.phone and tbp.status=1
+        UNION all
+        SELECT DISTINCT haa.authType,haa.authId authId,ueuv.bRoleName authName,haa.configureId
+        configureId,hcai.positionName positionName,"角色" authTypeStr
+        FROM hx_sign_track_auth haa,uv_erole_user_view ueuv,hx_sign_track_configure hcai
+        where haa.authType=2
+        and haa.configureId = hcai.id
+        <if test="configureId != null and configureId != '' ">
+            and haa.configureId = #{configureId}
+        </if>
+        <if test="positionName != null and positionName != '' ">
+            and hcai.positionName like concat(concat("%",#{positionName}),"%")
+        </if>
+        <if test="authId != null and authId != '' ">
+            and haa.authId = #{authId}
+        </if>
+        <if test="authName != null and authName != '' ">
+            and ueuv.bRoleName like concat(concat("%",#{authName}),"%")
+        </if>
+        and haa.authId=ueuv.bRoleId
+        )aa where 1=1
+        <if test="authType != null and authType != '' and authType != '0'.toString() ">
+            and authType = #{authType}
+        </if>
+        <if test="authType!=null and authType!='' or authType == 0 ">
+            and authType = #{authType}
+        </if>
+        order by aa.configureId,aa.authType
+    </select>
+
+
+</mapper>

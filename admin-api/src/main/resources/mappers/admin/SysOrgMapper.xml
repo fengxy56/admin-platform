@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hongkun.mapper.apply.HxOrgMapper">
+
+
+    <!--  fengxiaoyang 20200403 根据角色id 和版本id获取用户角色授权菜单 -->
+    <select id="getHxOrgTreeMenuList" resultType="com.hongkun.model.vo.apply.HxOrgVO">
+        select distinct a.id menuId,a.name menuName,a.name title,a.parentId,0 type,
+        case when xra.id is null then 'false' else 'true' end as checked
+        FROM t_bd_org a
+        LEFT JOIN sys_auth_menu xra
+        on xra.MenuId=a.id
+        and xra.authId=#{authId}
+        and xra.authType=#{authType}
+        and xra.sysType=#{sysType}
+    </select>
+
+</mapper>

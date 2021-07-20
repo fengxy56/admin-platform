@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hongkun.mapper.hxgol.HxAppMenuAuthMapper">
+
+    <!--fengxiaoyang 20200403 根据角色id获取用户角色授权菜单-->
+    <select id="getUserRoleAppMenuVOList" resultType="com.hongkun.model.vo.hx.UserRoleAppMenuVO">
+        select hcai.appId menuId,hcai.appName menuName,hcai.appName title,hcai.parentAppId parentId,
+        case when haa.ID is null then 'false' else 'true' end as checked
+        FROM hx_cust_app_menu hcai
+        LEFT JOIN hx_app_menu_auth haa
+        on haa.appId=hcai.appId
+        and haa.authType = #{authType}
+        and haa.authId = #{authId}
+        where hcai.status=1
+        <if test="parentAppId != null and parentAppId != ''">
+            and hcai.parentAppId=#{parentAppId}
+        </if>
+
+        ORDER BY hcai.showOrder
+    </select>
+
+
+    <!--fengxiaoyang 20200403 根据角色id获取用户角色授权菜单-->
+    <!--<select id="getAppMenuUserRoleAuthList" resultType="com.hongkun.model.vo.hxopensys.AppMenuUserRoleAuthVO">-->
+        <!--select *FROM (-->
+                <!--SELECT DISTINCT haa.authType,haa.authId authId,tbp.name authName,hcai.appId appId,hcai.appName appName,"账户"-->
+                <!--authTypeStr-->
+                <!--FROM hx_app_menu_auth haa,opensys.t_bd_person tbp,hx_cust_app_menu hcai-->
+                <!--where haa.authType=1 and haa.status=1-->
+                <!--and haa.appId=hcai.appId-->
+                <!--<if test="appId != null and appId != '' ">-->
+                    <!--and haa.appId = #{appId}-->
+                <!--</if>-->
+                <!--<if test="appName != null and appName != '' ">-->
+                    <!--and hcai.appName like concat(concat("%",#{appName}),"%")-->
+                <!--</if>-->
+                <!--<if test="authId != null and authId != '' ">-->
+                    <!--and haa.authId = #{authId}-->
+                <!--</if>-->
+                <!--<if test="authName != null and authName != '' ">-->
+                    <!--and tbp.name like concat(concat("%",#{authName}),"%")-->
+                <!--</if>-->
+                <!--and haa.authId=tbp.phone and tbp.status=1-->
+                <!--and orgInfoId= #{orgInfoId}-->
+            <!--UNION all-->
+                <!--SELECT DISTINCT haa.authType,haa.authId authId,ueuv.bRoleName authName,hcai.appId appId,hcai.appName-->
+                <!--appName,"角色" authTypeStr-->
+                <!--FROM hx_app_menu_auth haa,uv_erole_user_view ueuv,hx_cust_app_menu hcai-->
+                <!--where haa.authType=2 and haa.status=1-->
+                <!--and haa.appId=hcai.appId-->
+                <!--<if test="appId != null and appId != '' ">-->
+                    <!--and haa.appId = #{appId}-->
+                <!--</if>-->
+                <!--<if test="appName != null and appName != '' ">-->
+                    <!--and hcai.appName like concat(concat("%",#{appName}),"%")-->
+                <!--</if>-->
+                <!--<if test="authId != null and authId != '' ">-->
+                    <!--and haa.authId = #{authId}-->
+                <!--</if>-->
+                <!--<if test="authName != null and authName != '' ">-->
+                    <!--and ueuv.bRoleName like concat(concat("%",#{authName}),"%")-->
+                <!--</if>-->
+                <!--and haa.authId=ueuv.bRoleId-->
+        <!--)aa where 1=1-->
+        <!--<if test="authType != null and authType != '' ">-->
+            <!--and authType = #{authType}-->
+        <!--</if>-->
+        <!--order by aa.appId,aa.authType-->
+    <!--</select>-->
+
+
+    <!--&lt;!&ndash;  fengxiaoyang 20200403 根据用户获取用户角色授权菜单 &ndash;&gt;-->
+    <!--<select id="getUserMenuListByAccount" resultType="com.hongkun.model.vo.UserRoleMenuVO">-->
+    <!--select xm.id menuId,xm.menuName,xm.menuName title,xm.menuCode,xm.type,xm.parentId,xm.menuUrl,-->
+    <!--xm.status,xm.showOrder,xm.remark,xm.icon,xra.account,-->
+    <!--case when  xra.ID is null  then 'false' else 'true' end as checked-->
+    <!--FROM menu xm-->
+    <!--LEFT JOIN user_menu xra-->
+    <!--on xra.MenuId=xm.Id-->
+    <!--and xra.account=#{account}-->
+    <!--</select>-->
+
+</mapper>

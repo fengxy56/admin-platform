@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hongkun.mapper.admin.SysAuthMenuMapper">
+
+    <!--  fengxiaoyang  20200416 获取用户左侧菜单-->
+    <select id="getUserLoginTreeMenu" resultType="com.hongkun.model.vo.apply.SysAuthMenuVO">
+        select * FROM (
+        select distinct hm.id menuId,hm.menuName,hm.menuCode,hm.parentId,hm.menuUrl,hm.type,hm.showOrder,hm.icon
+        FROM sys_menu hm,sys_auth_menu hum
+        where hum.menuId=hm.Id
+        and hm.type <![CDATA[ < ]]> 2
+        and hm.status=1
+        and hum.authId=#{account}
+        and hum.authType=1
+        and hum.sysType = #{sysType}
+        UNION ALL
+        select distinct xm.id menuId,xm.menuName,xm.menuCode,xm.parentId,xm.menuUrl,xm.type,xm.showOrder,xm.icon
+        FROM sys_menu xm,sys_auth_menu hum
+        where hum.menuId=xm.Id
+        and xm.type <![CDATA[ < ]]> 2
+        and xm.status=1
+        and hum.authType=2
+        and hum.authId in (select bRoleId FROM uv_erole_user_view where accountName=#{account} and statusType=0)
+        and hum.sysType = #{sysType}
+        ) aa
+        ORDER BY aa.type,aa.showOrder
+
+    </select>
+
+
+    <!--  fengxiaoyang 20200403 根据角色id 和版本id获取用户角色授权菜单 -->
+    <select id="getSysAuthMenuList" resultType="com.hongkun.model.vo.apply.SysAuthMenuVO">
+        select xm.id menuId,xm.menuName,xm.menuName title,xm.menuCode,xm.type,xm.parentId,xm.menuUrl,
+        xm.status,xm.showOrder,xm.remark,xm.icon,xra.authId,
+        case when xra.ID is null then 'false' else 'true' end as checked
+        FROM sys_menu xm
+        LEFT JOIN sys_auth_menu xra
+        on xra.MenuId=xm.Id
+        and xra.authId=#{authId}
+        and xra.authType=#{authType}
+        and xra.sysType=#{sysType}
+    </select>
+
+
+</mapper>
